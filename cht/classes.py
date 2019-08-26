@@ -62,35 +62,6 @@ class CHT:
     def get_map(self):
         return self.hash_map_dict
 
-    def get_efficiency(self):
-        big_o = 0  # Worst
-        omega = ""  # Best
-        theta = 0  # Average
-        total_hashed_lists = 0
-        total_hashed_words = 0
-
-        for key in self.keys:
-            for hash_map_val in self.hash_map_dict[key]:
-                if len(hash_map_val.values) > big_o:
-                    big_o = len(hash_map_val.values)
-                if isinstance(omega, str) or (len(hash_map_val.values) < omega and len(hash_map_val.values) != 0):
-                    omega = len(hash_map_val.values)
-
-        for hash_map_val in self.hash_map_dict["__words__"]:
-            if len(hash_map_val.values) > 0:
-                total_hashed_lists += 1
-                total_hashed_words += len(hash_map_val.values)
-
-        try:
-            theta = total_hashed_words / total_hashed_lists
-        except ZeroDivisionError:
-            theta = 0
-
-        if omega == 0:
-            omega = 1
-
-        return big_o, omega, theta
-
 
 class Word:
 
