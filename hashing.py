@@ -1,4 +1,5 @@
 import classes
+import CHT
 
 
 def hash_string(string, table_size):
@@ -14,8 +15,9 @@ def hash_string(string, table_size):
     return next_map_value
 
 
-def lookup_hash(key, lookup_val, hash_map_dict):
-    key_index = hash_string(lookup_val, len(hash_map_dict["title"]))
+def lookup_hash(key: str, lookup_val: str, cht: CHT):
+    hash_map_dict = cht.get_map()
+    key_index = hash_string(lookup_val, len(hash_map_dict[key]))
     origin_index = key_index
 
     return_rows = []
