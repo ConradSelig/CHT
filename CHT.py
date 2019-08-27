@@ -14,9 +14,8 @@ class CHT:
         CHT holds both the raw table data (built into classes) and the compiled cubic hash table itself.
     """
 
-    def __init__(self, keys, values):
+    def __init__(self, keys):
         self.keys = keys + ["__words__"]
-        self.raw_values = values
         self.rows = []
         self.words = []
         self.hash_map_dict = {key: [] for key in keys}
@@ -59,7 +58,7 @@ class CHT:
         # for each row in new data
         for row in rows:
             # create a new Row object with the table keys
-            temp_row = Row(self.keys)
+            temp_row = classes.Row(self.keys)
             # build the new row object with the table data
             temp_row.build_from_table(row)
             # append to row to the CHT
@@ -67,7 +66,7 @@ class CHT:
             # for each word in the new row
             for new_word in temp_row.get_words():
                 # append each word to the CHT as a Word object
-                self.words.append(Word(new_word, temp_row.get("id")))
+                self.words.append(classes.Word(new_word, temp_row.get("id")))
         # for each row in the CHT raw rows
         for row in self.rows:
             # if an ID was not found in the row or a blank ID was givin
