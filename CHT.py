@@ -1,3 +1,4 @@
+import classes
 import hashing
 import output
 
