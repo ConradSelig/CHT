@@ -1,5 +1,5 @@
-from cht import hashing
-from cht import output
+import hashing
+import output
 import re
 
 

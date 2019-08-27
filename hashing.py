@@ -1,5 +1,4 @@
-from cht import classes
-from cht import output
+import classes
 
 
 def hash_string(string, table_size):
