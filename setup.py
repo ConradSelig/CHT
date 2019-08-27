@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='CHT',
-    version='0.1.4',
+    version='0.1.5',
     packages=[''],
     url='https://github.com/ConradSelig/CHT',
     license='Apache Licence 2.0',
