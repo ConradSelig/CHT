@@ -11,9 +11,10 @@ class Word:
         self.word = word
         self.id = word_id
 
-    # this function is an override of the getattr() function that allows for use as a class function
     def get(self, attr):
-        return getattr(self, attr)
+        if attr == "id":
+            return self.id
+        return self.word
 
 
 class Row:
