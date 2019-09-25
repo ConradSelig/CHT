@@ -1,5 +1,5 @@
-import classes, hashing, output
-from CHT import CHT
+from CHT_mrk1 import output, hashing, classes
+from CHT_mrk1.CHT import CHT
 
 
 def run_tests():

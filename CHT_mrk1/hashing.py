@@ -1,5 +1,4 @@
-import classes
-import CHT
+from CHT_mrk1 import classes, CHT
 
 
 def hash_string(string, table_size):
