@@ -2,7 +2,17 @@ from testing_suite import gen_tests
 
 
 def main():
-    gen_tests.run_tests()
+
+    '''
+    mlist = [[]]
+    print(mlist)
+    mlist[-1][-1] = 1
+    print(mlist)
+    '''
+
+    gen_tests.initialize_test()
+    gen_tests.add_row_test()
+    gen_tests.add_many_rows_test()
     return
 
 

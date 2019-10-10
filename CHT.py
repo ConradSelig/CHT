@@ -1,32 +1,26 @@
 import prime_math
+from pandas import DataFrame
+from DataFrame_utils import *
 
 
 class CHT:
 
     def __init__(self):
-        # (17, 17) are arbitrary primes chosen as a min-size.
-        self.min_table_size = (17, 17)
-        # Tuple holding X, Y size of table. This is used instead of the len() because the table is sized to be the
-        # smallest primes larger than len().
-        self.table_size = self.min_table_size
+        # 17 is an arbitrary primes chosen as a min-size.
+        self.table_size = 17
 
         # raw table that holds all of the actual data.
-        self.raw_table = []
+        self.raw_table = DataFrame()
         # 2D hash_table holding all of the locations for the data in the raw_table
-        self.hash_table = [[None for _ in range(self.table_size[0])] for _ in range(self.table_size[1])]
+        self.hash_table = [[[] for _ in range(self.table_size)] for _ in range(self.table_size)]
         # When the size of the hash_table is increased, all of the data is copied into this variable before being
         # re-hashed into the actual hash_table.
         self.temp_table = []
 
-        # row keys and col keys. These are used to re-hash the table when the size changes, as well as verify hash
-        # requests
-        self.row_keys = [None] * self.table_size[0]
-        self.col_keys = [None] * self.table_size[0]
-
         # Integer count of the number of values in the hash_table. This is used to determine when the table
         # needs to be expanded.
         self.cells_filled = 0
-        self.cell_count = self.table_size[0] * self.table_size[1]
+        self.cell_count = self.table_size * self.table_size
 
         # boolean value, if True debug text is printing throughout class. If False the CHT does not print anything.
         self.debug_mode = False
@@ -44,83 +38,41 @@ class CHT:
         :return: bool - True for data added and False when a failure occurs.
         """
 
-        # check for row_key in rows
-        for i, key in enumerate(self.row_keys):
-            if key == row_key:
-                raw_row_index = i
-                break
-        else:
-            raw_row_index = -1
+        if self.debug_mode:
+            print("\n\n\n")
 
-        # check for col_key in cols
-        for i, key in enumerate(self.col_keys):
-            if key == col_key:
-                raw_col_index = i
-                break
-        else:
-            raw_col_index = -1
+        row_index = get_index_from_row(self.raw_table, row_key)
+        col_index = get_index_from_row(self.raw_table, col_key)
 
-        if raw_row_index == -1 or raw_col_index == -1:
-            # if adding new data increment cells_filled
+        # check if the given keys are for a new value, if not that means an old value is being overwritten.
+        if row_index == -1 or col_index == -1:
+            if self.debug_mode:
+                print("Cell not already known, incrementing cells_filled count.")
             self.cells_filled += 1
 
-        # add new row/col/row+col to row and col lists
-        if raw_row_index == -1:
-            self.row_keys.append(row_key)
-            raw_row_index = len(self.row_keys)
-        if raw_col_index == -1:
-            self.col_keys.append(col_key)
-            raw_col_index = len(self.col_keys)
-
-        # add new val to raw_table
-        self.raw_table[raw_row_index][raw_col_index] = val
-
-        # hash the two values to get the table indexes
-        row_index = self._hash_string(row_key, self.table_size[0])
-        col_index = self._hash_string(col_key, self.table_size[1])
-
-        return
-
-    def old_add_val(self, row_key, col_key, val, check_table_size=True):
-
-        # hash the two values to get the table indexes
-        row_index = self._hash_string(row_key, self.table_size[0])
-        col_index = self._hash_string(col_key, self.table_size[1])
-
+        self.raw_table.at[row_key, col_key] = val
         if self.debug_mode:
-            print("Row key hashed:", row_key, "=>", row_index)
-            print("Column key hashed:", col_key, "=>", col_index)
+            print("'" + str(val) + "' has been added to the raw data table.")
 
-        # if there is no value in the target cell (ie target cell is NOT being updated)
+        hash_row = self._hash_string(str(row_key), self.table_size)
+        hash_col = self._hash_string(str(col_key), self.table_size)
         if self.debug_mode:
-            print(self.table[row_index][col_index])
-        if self.table[row_index][col_index] is None:
-            # update the cells filled count
-            self.cells_filled += 1
+            print("'" + str(row_key) + "' hashed to " + str(hash_row))
+            print("'" + str(col_key) + "' hashed to " + str(hash_col))
 
-            if self.debug_mode:
-                print("Value added to new cell. Cells Filled value updated.")
-        else:
-            if self.debug_mode:
-                print("Cell value updated. Cells Filled goes unchanged.")
-
-        # set the target cell of the table to the given value
-        self.table[row_index][col_index] = val
-        # add the keys to their respective lists
-        self.row_keys[row_index] = row_key
-        self.col_keys[col_index] = col_key
-
-        # Check the hash state
-        if check_table_size:
-
-            if self.debug_mode:
-                print("Checking the size of the hash table.")
-
-            self.check_table_size()
-
+        self.hash_table[hash_row][hash_col].append(
+                                                    (get_index_from_row(self.raw_table, row_key),
+                                                     get_index_from_col(self.raw_table, col_key))
+                                                  )
         if self.debug_mode:
-            print(self.table)
-            print("\n")
+            print("Indexes added to hash table.")
+
+            if len(get_col_keys(self.raw_table)) < 15:
+                print("Current raw table:")
+                print(self.raw_table)
+                print()
+                print("Current hash table:")
+                print(self.hash_table)
 
         return
 
@@ -161,7 +113,7 @@ class CHT:
         return
 
     @staticmethod
-    def _hash_string(self, string, mod_val):
+    def _hash_string(string, mod_val):
         # set the index value to 0 as a baseline
         next_index_value = 0
         # for each character in the string
