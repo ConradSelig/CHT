@@ -1,6 +1,8 @@
 import prime_math
 from pandas import DataFrame
 from DataFrame_utils import *
+import warnings
+import time
 
 
 class CHT:
@@ -29,7 +31,7 @@ class CHT:
         self.debug_mode = new_mode
         return
 
-    def add_val(self, row_key, col_key, val, check_table_size=True):
+    def add(self, row_key, col_key, val, check_table_size=True):
         """
         :param row_key: string - key delimiting the row
         :param col_key: string - key delimiting the column
@@ -42,13 +44,18 @@ class CHT:
             print("\n\n\n")
 
         row_index = get_index_from_row(self.raw_table, row_key)
-        col_index = get_index_from_row(self.raw_table, col_key)
+        col_index = get_index_from_col(self.raw_table, col_key)
 
         # check if the given keys are for a new value, if not that means an old value is being overwritten.
         if row_index == -1 or col_index == -1:
             if self.debug_mode:
                 print("Cell not already known, incrementing cells_filled count.")
             self.cells_filled += 1
+        else:
+            if self.debug_mode:
+                print("Cell value was overwritten.")
+            self.raw_table.at[row_key, col_key] = val
+            return
 
         self.raw_table.at[row_key, col_key] = val
         if self.debug_mode:
@@ -76,40 +83,47 @@ class CHT:
 
         return
 
+    def get(self, row_key, col_key):
+        row_index = self._hash_string(str(row_key), self.table_size)
+        col_index = self._hash_string(str(col_key), self.table_size)
+
+        if self.debug_mode:
+            print("\n\nGetting value with row key '" + str(row_key) + "' and col key '" + str(col_key) + "'.")
+            print("\tRow index =", row_index)
+            print("\tCol index =", col_index)
+
+        for index_tuple in self.hash_table[row_index][col_index]:
+            try:
+                raw_row_key = get_row_from_index(self.raw_table, index_tuple[0])
+                raw_col_key = get_col_from_index(self.raw_table, index_tuple[1])
+            except IndexError:
+                raw_row_key = None
+                raw_col_key = None
+                warnings.warn("An index error has occurred, was an index pair manually added to the hash table?",
+                              UserWarning)
+                time.sleep(0.1)
+                continue
+
+            if self.debug_mode:
+                print("Checking next index tuple...")
+                print("\t", index_tuple)
+                print("\tRaw row key =", raw_row_key)
+                print("\tRaw col key =", raw_col_key)
+
+            if get_row_from_index(self.raw_table, index_tuple[0]) == row_key and \
+                    get_col_from_index(self.raw_table, index_tuple[1]) == col_key:
+                if self.debug_mode:
+                    print("Matching value found. Value =", self.raw_table.iloc[index_tuple[0], index_tuple[1]])
+                return self.raw_table.iloc[index_tuple[0], index_tuple[1]]
+
+        if self.debug_mode:
+            print("No matching value found.")
+        return None
+
     def check_table_size(self):
-        if self.cells_filled * 1.33 > self.cell_count:
-            current_prime = self.table_size[0]
-            # use the prime_math file to get the next prime larger than the current prime.
-            next_prime = prime_math.next_prime(current_prime)
-
-            if self.debug_mode:
-                print("Table size checked. Increasing size.")
-                print("\tLast Size:", current_prime, "x", current_prime)
-                print("\tNext Size:", next_prime, "x", next_prime)
-
-            # update the class functions
-            self.table_size = (next_prime, next_prime)
-            self.cell_count = next_prime * next_prime
-
-            # re-hash the table
-            self.re_hash()
-        else:
-            if self.debug_mode:
-                print("Table size checked. No size change required.")
         return
 
     def re_hash(self):
-        # set the temp_table to the current table so no data is lost
-        self.temp_table = self.table
-        # reset the table to an empty table
-        self.hash_table = [[None for _ in range(self.table_size[0])] for _ in range(self.table_size[1])]
-
-        for row_index, row in enumerate(self.temp_table):
-            for col_index, val in enumerate(row):
-                self.add_val(self.row_keys[row_index], self.col_keys[col_index], val, check_table_size=False)
-
-        # reset the temp_table so that storage space is not being used
-        self.temp_table = []
         return
 
     @staticmethod
